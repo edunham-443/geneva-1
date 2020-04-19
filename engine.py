@@ -178,14 +178,11 @@ class WindowsEngine(GenericEngine):
         try:
             self.logger.debug("Sending packet %s", str(packet))
             # Convert the packet to a bytearray so memoryview can edit the underlying memory
-            print("About to cnvert")
             pack = bytearray(bytes(packet.packet))
-            print("about to send")
-            print(pack)
             # Don't recalculate checksum since sometimes we will have already changed it
             self.divert.send(pydivert.Packet(memoryview(pack), self.interface, dir), recalculate_checksum=False)
         except Exception as e:
-            print(e)
+            self.logger.debug(e)
             self.logger.exception("Error in engine mysend.")
     
     def handle_outbound_packet(self, divert_packet):

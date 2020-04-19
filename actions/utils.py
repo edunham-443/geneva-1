@@ -13,7 +13,7 @@ import actions.action
 import actions.trigger
 import actions.packet
 
-from scapy.all import TCP, IP, UDP, rdpcap
+from scapy.all import TCP, IP, UDP, rdpcap, IFACES
 from actions.http import HTTPRequest
 import netifaces
 
@@ -186,7 +186,7 @@ def get_interface():
     """
     if os.name == 'nt':
         # Windows code
-        return # TODO: Fix this 
+        return # TODO: Fix this
     else:
         ifaces = netifaces.interfaces()
         for iface in ifaces:

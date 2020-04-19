@@ -61,6 +61,18 @@ def test_run():
     p1 = actions.packet.Packet(IP(src="127.0.0.1", dst="127.0.0.1")/TCP(sport=2222, dport=3333, seq=100, ack=100, flags="S"))
     packets = strat5.act_on_packet(p1, logger)
 
+def test_packet_tamper():
+    """
+    Tests a single tamper primitive
+    """
+    p1 = actions.packet.Packet(IP(src="127.0.0.1", dst="127.0.0.1")/TCP(sport=2222, dport=3333, seq=100, ack=100, flags="A", dataofs=5))
+    strat3 = actions.utils.parse("[TCP:flags:A]-duplicate(tamper{TCP:dataofs:replace:0},)-| \/", logger)
+    
+    packets = strat3.act_on_packet(p1, logger, direction="out")
+    assert packets, "Strategy dropped packets"
+    assert len(packets) == 2, "Incorrect number of packets emerged from forest"
+    assert packets[0]["TCP"].dataofs == 0, "Packet tamper failed"
+    assert packets[1]["TCP"].dataofs == 5, "Duplicate packet was tampered"
 
 def test_pretty_print():
     """

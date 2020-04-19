@@ -45,11 +45,9 @@ class TamperAction(Action):
         """
         Edits a given packet according to the action settings.
         """
-        
         # Return packet untouched if not applicable
         if not packet.haslayer(self.tamper_proto_str):
             return packet
-        
         # Retrieve the old value of the field for logging purposes
         old_value = packet.get(self.tamper_proto_str, self.field)
         
@@ -70,7 +68,7 @@ class TamperAction(Action):
                 new_value = int(self.tamper_value) + int(old_value)
             elif self.tamper_type == "compress":
                 return packet.dns_decompress(logger)
-            elif self.tamper_type == "insert":
+            elif self.tamper_proto == HTTPRequest and self.tamper_type == "insert":
                 packet = insert(packet, self.field, self.start_index, self.decoded_payload)
                 
                 del packet["IP"].chksum
@@ -78,7 +76,7 @@ class TamperAction(Action):
                 del packet["TCP"].chksum
                 del packet["TCP"].dataofs
                 return packet
-            elif self.tamper_type == "replace":
+            elif self.tamper_proto == HTTPRequest and self.tamper_type == "replace":
                 packet = replace(packet, self.field, self.start_index, self.decoded_payload)
 
                 del packet["IP"].chksum
@@ -100,7 +98,6 @@ class TamperAction(Action):
 
         logger.debug("  - Tampering %s field `%s` (%s) by %s (to %s)" %
                      (self.tamper_proto_str, self.field, str(old_value), self.tamper_type, str(new_value)))
-        print("about to call set")
         packet.set(self.tamper_proto_str, self.field, new_value)
 
         return packet
@@ -249,7 +246,6 @@ def corrupt(packet, header, start_index, end_index):
     """
     Helper method to remove the characters at header[start_index] to header[end_index]
     """
-    print("in cor")
     if header not in packet["HTTPRequest"].fields:
         # TODO: throw some sort of error, this header doesn't exist
         return None
@@ -257,7 +253,6 @@ def corrupt(packet, header, start_index, end_index):
     if end_index+1 > len(packet["HTTPRequest"].fields[header]):
         # TODO: throw some sort of error, this index is too large
         return None
-    print("in cor")
     try:
         old_field = packet["HTTPRequest"].fields[header]
         tampered_field = packet["HTTPRequest"].fields[header][0:start_index]
@@ -270,10 +265,8 @@ def corrupt(packet, header, start_index, end_index):
             tampered_field = tampered_field + new_character
 
         tampered_field = tampered_field + packet["HTTPRequest"].fields[header][end_index+1:]
-        print("settings tampered field to:")
-        print(tampered_field)
         packet["HTTPRequest"].fields[header] = bytes(tampered_field, "UTF-8")
     except Exception as e:
-        print(e)
+        self.logger.debug(e)
 
     return packet

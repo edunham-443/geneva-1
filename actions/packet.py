@@ -28,7 +28,7 @@ class Packet():
         """
         Initializes the packet object.
         """
-        if(ScapyHTTPRequest in packet.layers()):
+        if(packet and ScapyHTTPRequest in packet.layers()):
             # We have a ScapyHTTPRequest. Instead, let's convert to our HttpRequest.
             # Overwrite the current ScapyHTTPRequest with a GenevaHTTPRequest
             self.packet = packet

@@ -3,8 +3,10 @@ import pytest
 
 import actions.packet
 import actions.layer
-
+import actions.utils
+import actions.strategy
 from scapy.all import IP, TCP, UDP, DNS, DNSQR, Raw, DNSRR
+from actions.http import HTTPRequest
 
 logger = logging.getLogger("test")
 
@@ -40,7 +42,7 @@ def test_gen_random():
     """
     for i in range(0, 2000):
         layer, field, value = actions.packet.Packet().gen_random()
-        assert layer in [DNS, TCP, UDP, IP, DNSQR]
+        assert layer in [HTTPRequest, DNS, TCP, UDP, IP, DNSQR]
 
 
 def test_dnsqr():
